@@ -16,8 +16,6 @@ pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t fill = PTHREAD_COND_INITIALIZER;
 pthread_cond_t empty = PTHREAD_COND_INITIALIZER;
 
-pthread_t **pthreads;
-
 int numfull, filled_to, use, max_buffers;
 int *buffer;
 
@@ -74,7 +72,7 @@ int main(int argc, char *argv[])
 
     // Create the threads
     int i, rc;
-    pthreads = malloc(num_threads * sizeof(pthreads));
+    pthread_t **pthreads = malloc(num_threads * sizeof(pthreads));
     for (i = 0; i < num_threads; i++) {
       pthreads[i] = malloc(sizeof(pthread_t));
       rc = pthread_create(pthreads[i], NULL, consumer, NULL);
