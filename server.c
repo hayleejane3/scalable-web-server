@@ -21,15 +21,15 @@ pthread_t **pthreads;
 int numfull, filled_to, use, max_buffers;
 int *buffer;
 
-void getargs(int *port, int *threads, int *buffers, int argc, char *argv[])
+void getargs(int *port, int *num_threads, int *num_buffers, int argc, char *argv[])
 {
     if (argc != 4) {
 	    fprintf(stderr, "Usage: %s <portnum> <threads> <buffers>\n", argv[0]);
 	    exit(1);
     }
     *port = atoi(argv[1]);
-    *threads = atoi(argv[2]);
-    *buffers = atoi(argv[3]);
+    *num_threads = atoi(argv[2]);
+    *num_buffers = atoi(argv[3]);
 }
 
 void *consumer(void *arg) {
@@ -55,27 +55,27 @@ void *consumer(void *arg) {
 
 int main(int argc, char *argv[])
 {
-    int listenfd, connfd, port, clientlen, threads, buffers;
+    int listenfd, connfd, port, clientlen, num_threads, num_buffers;
     struct sockaddr_in clientaddr;
 
-    getargs(&port, &threads, &buffers, argc, argv);
+    getargs(&port, &num_threads, &num_buffers, argc, argv);
 
     // Check validity of args
-    if (port < 0 || threads <= 0 || buffers <= 0) {
+    if (port < 0 || num_threads <= 0 || num_buffers <= 0) {
       fprintf(stderr, "Value of <threads> and <buffers> have to be positive ");
       fprintf(stderr, "integers and <portnum> has to be non-negative\n");
       exit(1);
     }
 
     // Set up buffer
-    max_buffers = buffers;
+    max_buffers = num_buffers;
     numfull = use = filled_to = 0;
-    buffer = malloc(buffers*sizeof(*buffer));
+    buffer = (int*)malloc(num_buffers * sizeof(int));
 
     // Create the threads
     int i, rc;
-    pthreads = malloc(threads * sizeof(pthreads));
-    for (i = 0; i < threads; i++) {
+    pthreads = malloc(num_threads * sizeof(pthreads));
+    for (i = 0; i < num_threads; i++) {
       pthreads[i] = malloc(sizeof(pthread_t));
       rc = pthread_create(pthreads[i], NULL, consumer, NULL);
       assert(rc == 0);
