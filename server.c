@@ -19,7 +19,7 @@ pthread_cond_t empty = PTHREAD_COND_INITIALIZER;
 pthread_t **pthreads;
 
 int numfull, filled_to, use, max_buffers;
-int **buffer;
+int *buffer;
 
 void getargs(int *port, int *threads, int *buffers, int argc, char *argv[])
 {
@@ -38,7 +38,7 @@ void *consumer(void *arg) {
 		while(numfull == 0) {
 			pthread_cond_wait(&fill, &lock);
 		}
-    int *requestfd = buffer[use];
+    int requestfd = buffer[use];
     use = (use + 1) % max_buffers;
 
     numfull--;
@@ -46,9 +46,9 @@ void *consumer(void *arg) {
     pthread_cond_signal(&empty);
     pthread_mutex_unlock(&lock);
 
-    requestHandle(*requestfd);
-
-    Close(*requestfd);
+    // Fails if inside the locks
+    requestHandle(requestfd);
+    Close(requestfd);
   }
 }
 
@@ -61,15 +61,15 @@ int main(int argc, char *argv[])
     getargs(&port, &threads, &buffers, argc, argv);
 
     // Check validity of args
-    if (threads <= 0 || buffers <= 0) {
-      fprintf(stderr, "Value of <threads> and <buffers> have to be positive");
-      fprintf(stderr, "integers.\n");
+    if (port < 0 || threads <= 0 || buffers <= 0) {
+      fprintf(stderr, "Value of <threads> and <buffers> have to be positive ");
+      fprintf(stderr, "integers and <portnum> has to be non-negative\n");
       exit(1);
     }
 
+    // Set up buffer
     max_buffers = buffers;
     numfull = use = filled_to = 0;
-
     buffer = malloc(buffers*sizeof(*buffer));
 
     // Create the threads
@@ -98,10 +98,7 @@ int main(int argc, char *argv[])
         pthread_cond_wait(&empty, &lock);
       }
 
-      int *request = malloc(sizeof(int));
-
-      *request = connfd;
-      buffer[filled_to] = request;
+      buffer[filled_to] = connfd;
       filled_to = (filled_to + 1) % max_buffers;
 
       numfull++;
