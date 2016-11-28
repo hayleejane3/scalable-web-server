@@ -72,18 +72,6 @@ void clientPrint(int fd)
     n = Rio_readlineb(&rio, buf, MAXBUF);
   }
 }
-// int clientf; char *file;
-// void* multclient(void *arg)
-// {
-//   /* Open a single connection to the specified host and port */
-//   // clientfd = Open_clientfd(host, port);
-//
-//   clientSend(clientf, file);
-//   clientPrint(clientf);
-//
-//   Close(clientf);
-//   return NULL;
-// }
 
 int main(int argc, char *argv[])
 {
@@ -102,18 +90,6 @@ int main(int argc, char *argv[])
 
   /* Open a single connection to the specified host and port */
   clientfd = Open_clientfd(host, port);
-  // clientf = clientfd;
-  // file = filename;
-  //
-  // int i, rc, num_threads = 5;
-  // pthread_t **pthreads = malloc(num_threads * sizeof(pthreads));
-  // for (i = 0; i < num_threads; i++) {
-  //   pthreads[i] = malloc(sizeof(pthread_t));
-  //   rc = pthread_create(pthreads[i], NULL, multclient, NULL);
-  //   assert(rc == 0);
-  // }
-
-
   
   clientSend(clientfd, filename);
   clientPrint(clientfd);
