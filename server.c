@@ -32,19 +32,19 @@ void getargs(int *port, int *num_threads, int *num_buffers, int argc, char *argv
 
 void *consumer(void *arg) {
   while(1) {
-	  pthread_mutex_lock(&lock);
+	  Pthread_mutex_lock(&lock);
 		while(numfull == 0) {
-			pthread_cond_wait(&fill, &lock);
+			Pthread_cond_wait(&fill, &lock);
 		}
     int requestfd = buffer[use];
     use = (use + 1) % max_buffers;
 
     numfull--;
 
-    pthread_cond_signal(&empty);
-    pthread_mutex_unlock(&lock);
+    Pthread_cond_signal(&empty);
+    Pthread_mutex_unlock(&lock);
 
-    // Fails if inside the locks
+    // Tests fail if done when lock is held
     requestHandle(requestfd);
     Close(requestfd);
   }
@@ -74,8 +74,8 @@ int main(int argc, char *argv[])
     int i, rc;
     pthread_t **pthreads = malloc(num_threads * sizeof(pthreads));
     for (i = 0; i < num_threads; i++) {
-      pthreads[i] = malloc(sizeof(pthread_t));
-      rc = pthread_create(pthreads[i], NULL, consumer, NULL);
+      pthreads[i] = (pthread_t*)malloc(sizeof(pthread_t));
+      rc = Pthread_create(pthreads[i], NULL, consumer, NULL);
       assert(rc == 0);
     }
 
@@ -91,17 +91,17 @@ int main(int argc, char *argv[])
 	    // here (e.g., a stat() on the filename) ...
 	    //
 
-      pthread_mutex_lock(&lock);
+      Pthread_mutex_lock(&lock);
       while (numfull == max_buffers) {
-        pthread_cond_wait(&empty, &lock);
+        Pthread_cond_wait(&empty, &lock);
       }
 
       buffer[filled_to] = connfd;
       filled_to = (filled_to + 1) % max_buffers;
 
       numfull++;
-      pthread_cond_signal(&fill);
-      pthread_mutex_unlock(&lock);
+      Pthread_cond_signal(&fill);
+      Pthread_mutex_unlock(&lock);
     }
 
 }
